@@ -1,5 +1,5 @@
 #Set working directory
-setwd("/home/user/Dropbox/dNdS_clones/")
+setwd("~/Dropbox/proyectos/dNdS_clones/")
 
 #Load libraries
 library("bedr")
@@ -7,14 +7,13 @@ library("dplyr")
 
 #Load data
 ##Single nucleotide variations
-snv.header<-read.table("TCGA-02-003/headers.maf", sep="\t", header = T)
-snv<-read.table("TCGA-02-003/TCGA-02-0003_cut.maf",sep="\t",header=F, stringsAsFactors = F)
-names(snv)<-names(snv.header[,c(1,5:7,40:45)])
+snv.header<-read.table("TCGA-02-003/data/headers.maf", sep="\t", header = T)
+snv<-read.table("data/maf/TCGA-OR-A5JI-01.maf",sep="\t",header=T, stringsAsFactors = F)
+snv<-snv[,c(1,5:7,40:45)]
 
 ##Copy number variations
 cnv.header<-read.table("TCGA-02-003/headers.seg.txt", sep="\t", header = T)
-cnv<-read.table("TCGA-02-003/TCGA-02-0003.seg.txt",sep="\t", header = F, stringsAsFactors = F)
-names(cnv)<-names(cnv.header)
+cnv<-read.table("data/cnv/TCGA-OR-A5JI-01.cnv",sep="\t", header = F, stringsAsFactors = F)
 
 ##SNV file
 snv.bedr<-snv[,c(2:4,1,5:10)]
