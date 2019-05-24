@@ -1,0 +1,46 @@
+---
+title: "Clone inference from TCGA tumors"
+author: "Alberto Vicens Sanchez"
+date: "May 7, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#TCGA datasets
+I used meta-cancer data of [PanCanAtlas](https://gdc.cancer.gov/about-data/publications/pancanatlas). This project assemble information from 10824 tumor samples across 33 cancer types from the Cancer Genome Atlas (TCGA) (Study Accession: phs000178.v10.p8).
+
+I downloaded meta-data for mutations, copy number, purity for all tumor samples from 
+
+##Example data
+In this report, I describe the protocol to infer clones using exampled data from a glioblastoma case (TCGA-02-0003). The tumor sample is TCGA-02-0003-01A-01D-1490-08 and normal sample is TCGA-02-0003-10A-01D-1490-08.
+
+##Clone inference
+I used [pyClone](https://bitbucket.org/aroth85/pyclone/wiki/Home) to infer clones based on mutation clusters. 
+To get the input for pyClone, I generated the intersect between SNV and CNV files with the sccript **get_input_pyclone.R**
+
+```{bash, eval = FALSE}
+#Extract rows corresponding to the sample from the mutation metafile
+{ zcat mc3.v0.2.8.PUBLIC.maf.gz | head -1 ; zcat mc3.v0.2.8.PUBLIC.maf.gz | grep 'TCGA-02-0033' ; } > tcga-02-0033.maf
+cut -f1,5-7,40-45 tcga-02-0033.maf > tcga-02-0033.counts
+
+{ head -1 TCGA_mastercalls.abs_segtabs.fixed.txt ; grep 'TCGA-02-0033' TCGA_mastercalls.abs_segtabs.fixed.txt ; } > tcga-02-003.cnv
+
+#Extract rows corresponding to the sample from the copy number metafile
+cat ~/PanCanAtlas/TCGA_mastercalls.abs_segtabs.fixed.txt | grep 'TCGA-02-0003' > TCGA-02-0003_cnv.txt
+
+#We also extract the column names of the metafiles
+zcat ~/PanCanAtlas/mc3.v0.2.8.PUBLIC.maf.gz | head -1 > headers.maf
+cat ~/PanCanAtlas/TCGA_mastercalls.abs_segtabs.fixed.txt | head -1 > headers.seg.txt
+```
+
+I then run pyClone
+```{bash run_pyclone, eval = FALSE}
+source activate pyclone
+PyClone run_analysis_pipeline --in_files TCGA-02-0003.pyclone --working_dir pyclone_output/pyclone_TCGA-02-0003 --tumour_contents 0.9 --density pyclone_binomial --min_cluster_size 2
+```
+
+
+
