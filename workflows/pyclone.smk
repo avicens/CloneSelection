@@ -33,4 +33,4 @@ rule run_pyclone:
     run:
         os.mkdir(output[0])
 	pur = samples.loc[wildcards.sample,'purity']
-	shell("PyClone run_analysis_pipeline --in_files {input} --working_dir {output} --tumour_contents {pur}  --density pyclone_binomial --min_cluster_size 2")
+	shell("source activate pyclone;	PyClone run_analysis_pipeline --in_files {input} --working_dir {output} --tumour_contents {pur}  --density pyclone_binomial --min_cluster_size 2")
