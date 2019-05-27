@@ -22,7 +22,11 @@ for (i in 1:length(pyclone.output.dirs)) {
 #sample.groups<-sample.names
 #names(sample.groups)<-vaf.col.names
 
-#Order data frame by cluster numbering
+#Convert variant/cellular frequency to proportions
+  pyclone.loci$variant_allele_frequency <- pyclone.loci$variant_allele_frequency*100
+  pyclone.loci$cellular_prevalence <- pyclone.loci$cellular_prevalence*100
+
+  #Order data frame by cluster numbering
   pyclone.loci<-pyclone.loci[order(pyclone.loci$cluster_id,decreasing = F),]
 
 #Discard clusters with < 3 mutations
@@ -48,7 +52,7 @@ for (i in 1:length(pyclone.output.dirs)) {
 
   clone.tree = infer.clonal.models(variants = pyclone.loci,
                         cluster.col.name = 'cluster',
-                        vaf.col.names = 'cellular_prevalence',
+                        vaf.col.names = 'variant_allele_frequency',
                         cancer.initiation.model='monoclonal',
                         subclonal.test = 'bootstrap',
                         subclonal.test.model = 'non-parametric',
@@ -60,13 +64,17 @@ for (i in 1:length(pyclone.output.dirs)) {
                         sum.p = 0.05,
                         alpha = 0.05)
 
-  clone.tree.df<-clone.tree$matched$merged.trees[[1]]
-#clone.tree.branch <- convert.consensus.tree.clone.to.branch(clone.tree.df, branch.scale = "sqrt")
+  clone.tree.branched<-convert.clone.to.branch(clone.tree$matched$merged.trees[[1]], 
+                                               branch.lens=NULL, merged.tree.node.annotation = "")
 
+#  clone.tree.branch <- convert.consensus.tree.clone.to.branch(clone.tree, 
+ #                                                             cluster.col = "cluster", branch.scale = "sqrt")
+
+  
   if (!file.exists(paste(pyclone.output.dir,"tree",sep="/"))) {
     dir.create(paste(pyclone.output.dir,"tree",sep="/"))
   }
 
-  write.table(clone.tree.df,paste(pyclone.output.dir,"/tree/",sample,"_pyclone_tree.tsv",sep=""),
+  write.table(clone.tree.branched,paste(pyclone.output.dir,"/tree/",sample,"_pyclone_tree.tsv",sep=""),
               sep="\t",row.names = F, col.names = T, quote = F)
 }
