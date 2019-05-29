@@ -136,6 +136,8 @@ for (i in 1:length(pyclone.output.dirs)) {
 
   clone.tree.branched<-convert.clone.to.branch(clone.tree$matched$merged.trees[[1]], 
                                                branch.lens=NULL, merged.tree.node.annotation = "")
+  
+  clone.tree.branched<-apply(clone.tree.branched,2,function(x) gsub('#',"",x))
 
 #  clone.tree.branch <- convert.consensus.tree.clone.to.branch(clone.tree, 
  #                                                             cluster.col = "cluster", branch.scale = "sqrt")
