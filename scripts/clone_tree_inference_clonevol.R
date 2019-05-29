@@ -3,6 +3,7 @@ args<-commandArgs(TRUE)
 pyclone_out_dir<-args[1]
 
 library(clonevol)
+library(dplyr)
 
 pyclone.output.dirs<-list.dirs(path = pyclone_out_dir,recursive = F)
 
@@ -137,7 +138,7 @@ for (i in 1:length(pyclone.output.dirs)) {
   clone.tree.branched<-convert.clone.to.branch(clone.tree$matched$merged.trees[[1]], 
                                                branch.lens=NULL, merged.tree.node.annotation = "")
   
-  clone.tree.branched<-apply(clone.tree.branched,2,function(x) gsub('#',"",x))
+  clone.tree.top<- clone.tree.branched %>% mutate_all(funs(gsub("#","",.))) %>% select(lab,vaf,parent,ancestors)
 
 #  clone.tree.branch <- convert.consensus.tree.clone.to.branch(clone.tree, 
  #                                                             cluster.col = "cluster", branch.scale = "sqrt")
@@ -148,5 +149,7 @@ for (i in 1:length(pyclone.output.dirs)) {
   }
 
   write.table(clone.tree.branched,paste(pyclone.output.dir,"/tree/",sample,"_pyclone_tree.tsv",sep=""),
+              sep="\t",row.names = F, col.names = T, quote = F)
+  write.table(clone.tree.top,paste(pyclone.output.dir,"/tree/",sample,"_pyclone_tree_topology.tsv",sep=""),
               sep="\t",row.names = F, col.names = T, quote = F)
 }
