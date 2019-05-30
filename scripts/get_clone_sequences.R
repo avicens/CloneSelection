@@ -1,5 +1,6 @@
 library(dplyr)
 library(dndscv)
+library(seqinr)
 
 #Set working directory
 
@@ -94,3 +95,6 @@ for(i in second.order.clones) {
   seqs$codon_alt[gaps]<-seqs[gaps,paste("clone",ancestral.clone,sep="")]
   names(seqs)[ncol(seqs)]<-paste("clone",i,sep="")
 }
+
+seqs<-seqs[order(seqs$chr,seqs$pos,decreasing = F),]
+write.fasta(seqs[,4:ncol(seqs)], names = names(seqs)[4:ncol(seqs)], file.out = "ref.fasta")
