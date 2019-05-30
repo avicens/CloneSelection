@@ -1,11 +1,11 @@
-#Input arguments
-args<-commandArgs(TRUE)
-pyclone_out_dir<-args[1]
-
+#Load libraries
 library(clonevol)
 library(dplyr)
 
-pyclone.output.dirs<-list.dirs(path = pyclone_out_dir,recursive = F)
+#Input arguments
+args<-commandArgs(TRUE)
+pyclone.table.loci<-args[1]
+#pyclone.table.loci<-"data/pyclone_output/TCGA-02-0003/tables/loci.tsv"
 
 #Function convert.clone.to.branch
 convert.clone.to.branch <- function(t, branch.lens = NULL,
@@ -71,12 +71,13 @@ convert.clone.to.branch <- function(t, branch.lens = NULL,
   
 }
 
+#Infer clone evolution from the loci table
 
-for (i in 1:length(pyclone.output.dirs)) {
+#for (i in 1:length(pyclone.output.dirs)) {
 
-  sample<-sapply(strsplit(pyclone.output.dirs[i],"/"),"[",4)
-  pyclone.output.dir<-pyclone.output.dirs[i]
-  pyclone.loci<-read.table(paste(pyclone.output.dir,"tables/loci.tsv",sep="/"),
+  sample<-sapply(strsplit(pyclone.table.loci,"/"),"[",3)
+  #pyclone.output.dir<-pyclone.output.dirs[i]
+  pyclone.loci<-read.table(pyclone.table.loci,
                          sep="\t", header=T, stringsAsFactors = F)
 
 ##Only for multiple samples
@@ -144,12 +145,13 @@ for (i in 1:length(pyclone.output.dirs)) {
  #                                                             cluster.col = "cluster", branch.scale = "sqrt")
 
   
-  if (!file.exists(paste(pyclone.output.dir,"tree",sep="/"))) {
-    dir.create(paste(pyclone.output.dir,"tree",sep="/"))
-  }
+  #if (!file.exists(paste("data/pyclone_output/",sample,"tree",sep="/"))) {
+  #  dir.create(paste("data/pyclone_output/",sample,"tree",sep="/"))
+  #}
 
-  write.table(clone.tree.branched,paste(pyclone.output.dir,"/tree/",sample,"_pyclone_tree.tsv",sep=""),
+  write.table(pyclone.loci,paste("data/pyclone_output/",sample,"/tables/loci_processed.tsv",sep=""),
+              sep="\t",row.names = F, col.names = T, quote = F) 
+  write.table(clone.tree.branched,paste("data/pyclone_output/",sample,"/tree.tsv",sep=""),
               sep="\t",row.names = F, col.names = T, quote = F)
-  write.table(clone.tree.top,paste(pyclone.output.dir,"/tree/",sample,"_pyclone_tree_topology.tsv",sep=""),
-              sep="\t",row.names = F, col.names = T, quote = F)
-}
+  #write.table(clone.tree.top,paste(pyclone.output.dir,"/tree/",sample,"_pyclone_tree_topology.tsv",sep=""),
+  #            sep="\t",row.names = F, col.names = T, quote = F)
