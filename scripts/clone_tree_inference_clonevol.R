@@ -5,6 +5,9 @@ library(dplyr)
 #Input arguments
 args<-commandArgs(TRUE)
 pyclone.table.loci<-args[1]
+loci.output<-args[2]
+tree.output<-args[3]
+
 #pyclone.table.loci<-"data/pyclone_output/TCGA-02-0003/tables/loci.tsv"
 
 #Function convert.clone.to.branch
@@ -149,9 +152,10 @@ convert.clone.to.branch <- function(t, branch.lens = NULL,
   #  dir.create(paste("data/pyclone_output/",sample,"tree",sep="/"))
   #}
 
-  write.table(pyclone.loci,paste("data/pyclone_output/",sample,"/tables/loci_processed.tsv",sep=""),
-              sep="\t",row.names = F, col.names = T, quote = F) 
-  write.table(clone.tree.branched,paste("data/pyclone_output/",sample,"/tree.tsv",sep=""),
-              sep="\t",row.names = F, col.names = T, quote = F)
+  write.table(pyclone.loci,loci.output, sep="\t",row.names = F, col.names = T, quote = F) 
+  #write.table(pyclone.loci,paste("data/pyclone_output/",sample,"/tables/loci_processed.tsv",sep=""), sep="\t",row.names = F, col.names = T, quote = F) 
+  
+  #write.table(clone.tree.branched,paste("data/pyclone_output/",sample,"/tree.tsv",sep=""), sep="\t",row.names = F, col.names = T, quote = F)
+  write.table(clone.tree.top,tree.output, sep="\t",row.names = F, col.names = T, quote = F)
   #write.table(clone.tree.top,paste(pyclone.output.dir,"/tree/",sample,"_pyclone_tree_topology.tsv",sep=""),
   #            sep="\t",row.names = F, col.names = T, quote = F)
