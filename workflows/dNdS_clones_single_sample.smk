@@ -6,7 +6,7 @@ rule all:
     input:
         #inter_samples = expand("data/pyclone_output/{sample}", sample =samples.index),
         #input_loci = expand("data/pyclone_input/{sample}_pyclone.txt", sample = samples.index),
-        input_tree = expand("data/trees/{sample}_tree.txt", sample = samples.index)
+        input_tree = expand("data/seqs/{sample}_pyclone_seqs.fas", sample = samples.index)
 
 rule intersect:
     input:
@@ -50,3 +50,13 @@ rule clone_evol:
     run:
 #        dir = samples.loc[wildcars.sample, 'sample']
         shell("Rscript scripts/clone_tree_inference_clonevol.R {input} {output.out_loci} {output.out_tree}")
+
+rule get_clone_sequences:
+    input:
+        snv = "data/snv/{sample}_SNV.tsv.gz",
+        loci = "data/pyclone_output/{sample}/tables/loci_processed.tsv",
+        tree = "data/trees/{sample}_tree.txt"
+    output:
+        seqs = "data/seqs/{sample}_pyclone_seqs.fas"
+    shell:
+        "Rscript scripts/get_clone_sequences.R {input.snv} {input.loci} {input.tree} {output.seqs}"
