@@ -6,7 +6,7 @@ rule all:
     input:
         #inter_samples = expand("data/pyclone_output/{sample}", sample =samples.index),
         #input_loci = expand("data/pyclone_input/{sample}_pyclone.txt", sample = samples.index),
-        input_tree = expand("data/seqs/{sample}_pyclone_seqs.fas", sample = samples.index)
+        general_output = expand("data/raxml_trees/{sample}_raxml.log", sample = samples.index)
 
 rule intersect:
     input:
@@ -46,9 +46,8 @@ rule clone_evol:
         "data/pyclone_output/{sample}/tables/loci.tsv"
     output:
         out_loci = "data/pyclone_output/{sample}/tables/loci_processed.tsv",
-        out_tree = "data/trees/{sample}_tree.txt"
+        out_tree = "data/clone_trees/{sample}_tree.txt"
     run:
-#        dir = samples.loc[wildcars.sample, 'sample']
         shell("Rscript scripts/clone_tree_inference_clonevol.R {input} {output.out_loci} {output.out_tree}")
 
 rule get_clone_sequences:
@@ -57,6 +56,32 @@ rule get_clone_sequences:
         loci = "data/pyclone_output/{sample}/tables/loci_processed.tsv",
         tree = "data/trees/{sample}_tree.txt"
     output:
-        seqs = "data/seqs/{sample}_pyclone_seqs.fas"
+        seqs = "data/codon_seqs/{sample}_clone_seqs.fas"
     shell:
         "Rscript scripts/get_clone_sequences.R {input.snv} {input.loci} {input.tree} {output.seqs}"
+
+rule curate_clone_seqs:
+    input:
+        "data/seqs/{sample}_clone_seqs.fas"
+    output:
+        "data/seqs/{sample}_clone_seqs_curated.fas"
+    shell:
+        "sed 's/[\.]//g' {input} > {output}"
+
+#rule convert_fasta_2_phylip:
+#    input:
+#        "data/codon_seqs/{sample}_clone_seqs_curated.fas"
+#    output:
+#        "data/nuc_seqs/{sample}_clone_seqs_curated.phy"
+#    shell:
+#        "python scripts/fasta2phylip.py -i {input} -o {output}"
+
+#python scripts/ascbias.py -p data/seqs/{samples}_pyclone_seqs.phy -o data/seqs/{sample}_pyclone_seqs
+
+rule build_tree:
+    input: "data/seqs/{sample}_clone_seqs_curated.fas"
+    output: "data/raxml_trees/{sample}_raxml.log"
+    run:
+        dir = samples.loc[wildcards.sample, 'sample']
+        outdir= "data/raxml_trees/"+dir
+        shell("raxml-ng --msa {input} --model GTR+G --force model_lh_impr --precision 12 --blmin 0.000000001 --prefix {outdir} > {output}")
