@@ -51,7 +51,7 @@ clusters[i]<-nrow(tree.file)
 }
 
 sample.clusters<-as.data.frame(cbind(clone.tree.samples, clusters))
-samples.data<-merge(samples.data,sample.clusters,by.x="sample",by.y="clone.tree.samples")
+samples.data<-merge(samples.data,sample.clusters,by.x="sample",by.y="clone.tree.samples",all.x=T)
 samples.data$clusters<-as.integer(samples.data$clusters)
 
 #Add global omega
