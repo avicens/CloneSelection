@@ -1,4 +1,5 @@
 library(reshape2)
+library(plyr)
 
 args<-commandArgs(TRUE)
 
@@ -33,7 +34,9 @@ cluster$norm_size<-round(sapply(cluster$size, function(x) (x/nmut)*100),2)
 #Get mutations
 mf<-with(mutations, table(cluster_id, Variant_Classification))
 cluster.mf<-merge(cluster, mf)
-cluster.cast<- dcast(cluster.mf, cluster_id ~ Variant_Classification, value.var = "Freq")
+cluster.cast<-dcast(cluster.mf, cluster_id ~ Variant_Classification, value.var = "Freq", 
+                    subset = .(Variant_Classification == "Missense_Mutation" | Variant_Classification == "Silent"))
+
 cluster2<-merge(cluster, cluster.cast, by = "cluster_id")
 
 #Get normalized clone IDs and ancestral state
