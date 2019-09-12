@@ -3,13 +3,13 @@ library(plyr)
 
 args<-commandArgs(TRUE)
 
-if (length(args) != 1) {
-  cat("Usage: Rscript build_mutation_table.R  <sampleName>\n")
+if (length(args) != 2) {
+  cat("Usage: Rscript build_mutation_table.R  <sampleName> <workDir>\n")
 }
 
 sample<-args[1]
+workDir<-args[2]
 
-workDir<-"/mnt/netapp2/Store_uni/home/uvi/be/avs/dNdS_clones/prueba_COAD"
 setwd(workDir)
 outFile<-paste("data/clones/",sample,"_clones_table.txt",sep="")
 
