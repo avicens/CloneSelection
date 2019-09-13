@@ -39,6 +39,9 @@ cluster.cast<-dcast(cluster.mf, cluster_id ~ Variant_Classification, value.var =
 
 cluster2<-merge(cluster, cluster.cast, by = "cluster_id")
 
+cluster2$Norm_Missense<-with(cluster2, Missense_Mutation/(Missense_Mutation + Silent))
+cluster2$Norm_Silent<-with(cluster2, Silent/(Missense_Mutation + Silent))
+
 #Get normalized clone IDs and ancestral state
 nc<-as.data.frame(table(loci$cluster)) #Get data for clone size
 
