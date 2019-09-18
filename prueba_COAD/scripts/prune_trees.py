@@ -21,4 +21,9 @@ rt = Tree(tree_dir + "rooted/" + sample_name + "_rooted.raxml.bestTree")
 rt.prune(rt.get_leaves()[:-1])
 
 #rt.write(format=0, outfile ="/Users/avicens/Dropbox/proyectos/dNdS_clones/prueba_COAD/trace/raxml_trees/pruned/TCGA-4N-93T_prunned.nwk")
-rt.write(format=0, outfile =tree_dir + "pruned/" + sample_name + "_prunned.nwk")
+rt.write(format=0, outfile =tree_dir + "pruned/" + sample_name + "_pruned_rooted.nwk")
+
+
+#Unroot the pruned tree
+rt.unroot()
+rt.write(format=0, outfile =tree_dir + "pruned/" + sample_name + "_pruned_unrooted.nwk")
