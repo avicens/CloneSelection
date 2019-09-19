@@ -107,11 +107,15 @@ for(so in second.order.clones) {
   names(seqs.cod)[ncol(seqs.cod)]<-paste("clone",so,sep="")
 }
 
+#Retain only tip clones (clones with private mutations)
+tip.clones.lab<-clone.tree[clone.tree$num.subclones==0,"lab"]
+tip.clones<-sapply(tip.clones.lab, function(x) paste("clone",x,sep=""))
+tip.seqs.cod<-seqs.cod[,c("chr","pos","ref",tip.clones)]
 
-if (!file.exists("data/seqs")) {
-  dir.create("data/seqs")
+if (!file.exists("trace/seqs")) {
+  dir.create("trace/seqs")
 }
 
-seqs<-seqs[order(seqs$chr,seqs$pos,decreasing = F),]
-write.fasta(seqs[,4:ncol(seqs)], names = names(seqs)[4:ncol(seqs)], 
+seqs<-tip.seqs.cod[order(tip.seqs.cod$chr,tip.seqs.cod$pos,decreasing = F),]
+write.fasta(seqs[,3:ncol(seqs)], names = names(seqs)[3:ncol(seqs)], 
             file.out = paste(out.seq.file,sep=""),open= "w")
