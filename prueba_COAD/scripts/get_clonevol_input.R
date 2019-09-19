@@ -1,11 +1,19 @@
 #Load libraries
-library(dplyr)
-library(stringr)
+library(dplyr, verbose = F, warn.conflicts = F)
+library(stringr, verbose =F, warn.conflicts = F)
 
+#Input arguments
 args<-commandArgs(TRUE)
+
+if (length(args) != 2) {
+  cat("Usage: Rscript get_clonevol_input.R  <pyclone.loci> <clonevol.input>  \n")
+quit()
+}
+
 pyclone.loci<-args[1]
 clonevol.input<-args[2]
 
+#Read loci table
 pyclone.loci<-read.table(pyclone.loci,
                          sep="\t", header=T, stringsAsFactors = F)
 
