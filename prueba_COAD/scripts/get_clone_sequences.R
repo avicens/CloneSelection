@@ -27,7 +27,7 @@ source(paste(script.path,"/annotate_mutations.R",sep=""))
 snv<-read.table(gzfile(in.snv.file),header=T)
 
 ##Table with variant information (ClonEvol input)
-#pyclone.loci<-read.table(paste("data/pyclone_output",sample,"tables/loci_processed.tsv",sep="/"), sep="\t", header=T, stringsAsFactors = F)
+#loci<-read.table(paste("data/pyclone_output",sample,"tables/loci_processed.tsv",sep="/"), sep="\t", header=T, stringsAsFactors = F)
 loci<-read.table(in.loci.file, sep="\t", header=T, stringsAsFactors = F)
 
 ##Table with clone tree inferred by ClonEvol using PyClone output
@@ -36,7 +36,7 @@ clone.tree<-read.table(in.tree.file, sep="\t", header=T, stringsAsFactors = F)
 
 #Merge snv and loci tables by mutation code
 snv$mutation_id<-with(snv,paste(Hugo_Symbol,":",Chr,"-",Start_Position,"_",End_Position,sep=""))
-muts<-merge(snv,pyclone.loci,by="mutation_id")
+muts<-merge(snv,loci,by="mutation_id")
 cluster.muts.list<-split(muts, muts$cluster)
 
 #parent.clone.lab<-pyclone.tree[pyclone.tree$parent==-1,"lab"]
@@ -45,9 +45,9 @@ cluster.dndscv.list<-list()
 for (i in 1:length(cluster.muts.list)) {
 clone.variants<-cluster.muts.list[[i]]
 clone.variants2<-clone.variants[,c("sample_id","Chr","Start_Position","Reference","Alternate")]
-clone.annotmuts<-annotate.mutations(clone.dndscv)
+clone.annotmuts<-annotate.mutations(clone.variants2)
 clone.annotmuts2<-separate(clone.annotmuts,"codonsub",into = c("codon_ref","codon_alt"),sep=">")
-cluster.dndscv.list<-c(cluster.dndscv.list,list(clone.annotmuts))
+cluster.dndscv.list<-c(cluster.dndscv.list,list(clone.annotmuts2))
 }
 
 names(cluster.dndscv.list)<-names(cluster.muts.list)
