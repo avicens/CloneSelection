@@ -15,7 +15,7 @@ names(snv.int.cnv)<-c("Chr","Start","End",	"Reference",	"Alternate",	"Variant_fr
                  "nProbes"	,"Modal_HSCN_1",	"Modal_HSCN_2",
                  "Modal_Total_CN"	,"purity"	,"ploidy")
 
-pyClone.input<-data.frame(mutation_id = paste(paste(snv.int.cnv[,8], ":",snv.int.cnv[,1],"-", 
+pyclone.input<-data.frame(mutation_id = paste(paste(snv.int.cnv[,8], ":",snv.int.cnv[,1],"-", 
                                                     snv.int.cnv[,2],"_",snv.int.cnv[,3], sep="")), 
                           ref_counts=snv.int.cnv$Ref_freq, var_counts = snv.int.cnv$Variant_freq, 
                           normal_cn = rep(2,nrow(snv.int.cnv)),
@@ -25,11 +25,19 @@ pyClone.input<-data.frame(mutation_id = paste(paste(snv.int.cnv[,8], ":",snv.int
                           var_freq = (snv.int.cnv$Variant_freq / (snv.int.cnv$Variant_freq + snv.int.cnv$Ref_freq)),                        
                           depth = (snv.int.cnv$Variant_freq + snv.int.cnv$Ref_freq),
                           norm_depth = (snv.int.cnv$Variant_freq + snv.int.cnv$Ref_freq)*snv.int.cnv$purity,
-                          stringsAsFactors = F)
+                          stringsAsFactors = F,
+                          Chr=snv.int.cnv$Chr, Start=snv.int.cnv$Start, End= snv.int.cnv$End)
 
 
 #(Optional) Apply filters
-pyClone.input<-pyClone.input %>% filter(total_cn == 2) %>% filter(norm_depth > 20) %>% filter(var_freq > 0.1)
+pyclone.input.filtered<-pyclone.input %>% filter(minor_cn == 1) %>% filter(major_cn ==1) %>% filter(norm_depth > 20) %>% filter(var_freq > 0.1)
 
-write.table(pyClone.input, outFile,sep="\t", row.names = F,
-            quote = F)
+if (nrow(pyclone.input.filtered) > 0) {
+
+  write.table(pyclone.input.filtered, outFile,sep="\t", row.names = F,
+              quote = F)
+} else {
+  cat ("File without mutations after filtering\n")
+
+}
+
