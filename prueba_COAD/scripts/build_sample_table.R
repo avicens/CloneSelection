@@ -34,7 +34,7 @@ samples.data[,c("OS.time","DFI.time","PFI.time")]<-sapply(samples.data[,c("OS.ti
 mutations<-integer()
 
 for (i in 1:length(samples)) {
-snv<-read.table(gzfile(paste("metadata/snv/",samples[i],"_SNV.tsv.gz",sep="")),
+snv<-read.table(gzfile(paste("data/snv/",samples[i],"_SNV.tsv.gz",sep="")),
                 header=T)
 mutations[i]<-nrow(snv)
 }
@@ -44,7 +44,7 @@ samples.data<-merge(samples.data, samples.muts, by="sample", all.x=TRUE)
 
 
 #Number of clusters inferred by PyClone (Clusters with size > 1)
-cluster.files<-list.files(path = "trace/pyclone_output",
+cluster.files<-list.files(path = "data/pyclone_output",
                        pattern = "cluster.tsv", 
                        full.names = T, recursive=TRUE)
 
@@ -61,8 +61,7 @@ cluster.df<-data.frame(sample=cluster_sample, clusters=cluster_number, stringsAs
 samples.data<-merge(samples.data,cluster.df,by="sample",all.x=TRUE)
 
 #Add number of clustered mutations (loci)
-
-loci.files<-list.files("trace/loci/", pattern = "TCGA-.*", full.names = T)
+loci.files<-list.files("data/loci/", pattern = "TCGA-.*", full.names = T)
 
 loci_samples<-character()
 cluster_mutations<-integer()
@@ -79,7 +78,7 @@ samples.data<-merge(samples.data, loci.df,by="sample")
 
 
 #Number of clones deconvoluted (ClonEvol)
-clone.tree.files=list.files("trace/clone_trees",pattern="*_tree.txt", full.names = T)
+clone.tree.files=list.files("data/clone_trees",pattern="*_tree.txt", full.names = T)
 clone.tree.samples<-str_extract(clone.tree.files, "TCGA-[A-Z0-9]{2}-[A-Z0-9]{4}")
 
 clones<-integer()
@@ -93,7 +92,7 @@ samples.data<-merge(samples.data, clones.df,by="sample",all.x=T)
 
 
 #Add number of clonal sequences
-seq.files=list.files(path = "trace/seqs",pattern="_clone_ref_seqs.fas", full.names=T, recursive = T)
+seq.files=list.files(path = "data/seqs",pattern="_clone_ref_seqs.fas", full.names=T, recursive = T)
 
 seq_sample<-str_extract(seq.files, "TCGA-[A-Z0-9]{2}-[A-Z0-9]{4}")
 seq_number<-integer()
@@ -104,24 +103,7 @@ for (i in 1:length(seq.files)) {
 }
 
 seq.df<-data.frame(sample=seq_sample, sequences=seq_number, stringsAsFactors = F)
-samples.d
-#Add global (bulk) dN/dS from from dndscv
-#dndscv.files=list.files(path = "data/dndscv/",pattern="bulk_dnds.txt",
- #                       full.names=T, recursive = T)
-
-#dndscv.samples<- sapply(strsplit(dndscv.files,"//|_"),"[",2)
-#dndscv_mis <-numeric()
-#dndscv_all <-numeric()
-
-#for (i in 1:length(dndscv.files)) {
-#dndscv.file<-read.table(dndscv.files[i],sep="\t",header=T)
-#dndscv_mis[i]<-dndscv.file[1,"mle"]
-#dndscv_all[i]<-dndscv.file[2,"mle"]
-#}
-
-#dndscv.df<-as.data.frame(cbind(dndscv.samples,dndscv_mis, dndscv_all))
-#names(dndscv.df)[2:3]<-c("bulk_dndscv_mis","bulk_dndscv_all")
-#samples.data<-merge(samples.data, dndscv.df,by.x="sample",by.y="dndscv.samples",all.x=T)
+samples.data<-merge(samples.data, seq.df, by="sample")
 
 #Add number of sequences and alignment length
 paml.folders<-list.dirs(path="data/paml_2", recursive = F)
@@ -147,7 +129,7 @@ seqlength.df<-data.frame(sample=paml.samples,nseqs, seqlength, stringsAsFactors 
 samples.data<-merge(samples.data,seqlength.df, by ="sample", all.x=T)
 
 #Add global dN/dS and LRT of free-branch vs M0 models of Codeml
-paml.files<-list.files(path="data/paml_2",pattern="M0_vs_fb.txt",full.names = T, recursive = T)
+paml.files<-list.files(path="data/paml",pattern="M0_vs_fb.txt",full.names = T, recursive = T)
 
 paml.samples<-sapply(strsplit(paml.files,"/"),"[",3)
 dNdS<-numeric()
@@ -173,9 +155,27 @@ paml.df[,2:3]<-sapply(paml.df[,c(2,3)],function(x) as.numeric(x))
 
 samples.data<-merge(samples.data,paml.df,by="sample",all.x=T)
 
+#Add global (bulk) dN/dS from from dndscv
+#dndscv.files=list.files(path = "data/dndscv/",pattern="bulk_dnds.txt",
+ #                       full.names=T, recursive = T)
+
+#dndscv.samples<- sapply(strsplit(dndscv.files,"//|_"),"[",2)
+#dndscv_mis <-numeric()
+#dndscv_all <-numeric()
+
+#for (i in 1:length(dndscv.files)) {
+#dndscv.file<-read.table(dndscv.files[i],sep="\t",header=T)
+#dndscv_mis[i]<-dndscv.file[1,"mle"]
+#dndscv_all[i]<-dndscv.file[2,"mle"]
+#}
+
+#dndscv.df<-as.data.frame(cbind(dndscv.samples,dndscv_mis, dndscv_all))
+#names(dndscv.df)[2:3]<-c("bulk_dndscv_mis","bulk_dndscv_all")
+#samples.data<-merge(samples.data, dndscv.df,by.x="sample",by.y="dndscv.samples",all.x=T)
+
 ##Molecular clock LRT
-clock.dirs<-list.dirs("trace/molecular_clock",recursive=F)
-samples.clocks<-sapply(strsplit(clock.dirs,"/"),"[",3)
+clock.dirs<-list.dirs("data/molecular_clock",recursive=F)
+samples.clocks<-str_extract(clock.dirs, "TCGA-[A-Z0-9]{2}-[A-Z0-9]{4}")
 
 lnl.relaxed.clock<-numeric()
 lnl.global.clock<-numeric()
@@ -183,12 +183,12 @@ lnl.global.clock<-numeric()
 for (i in 1:length(samples.clocks)) {
   
   #No-clock model
-  noclock.file<-readLines(paste(clock.dirs[i],"/no_clock_pruned/",samples.clocks[i],"_noclock.out",sep = ""))
+  noclock.file<-readLines(paste(clock.dirs[i],"/no_clock/",samples.clocks[i],"_noclock.out",sep = ""))
   noclock.lnl.line<-grep("lnL",noclock.file, value = T)
   lnl.relaxed.clock[i]<-as.numeric(sapply(strsplit(noclock.lnl.line,": +| +"),"[",5))
   
   #Global clock model
-  globalclock.file<-readLines(paste(clock.dirs[i],"/clock_pruned/",samples.clocks[i],"_clock.out",sep = ""))
+  globalclock.file<-readLines(paste(clock.dirs[i],"/clock/",samples.clocks[i],"_clock.out",sep = ""))
   globalclock.lnl.line<-grep("lnL",globalclock.file, value = T)
   lnl.global.clock[i]<-as.numeric(sapply(strsplit(globalclock.lnl.line,": +| +"),"[",5))
 }
