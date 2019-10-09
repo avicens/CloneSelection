@@ -54,7 +54,7 @@ ref.seq<-clusters.annotmuts.df %>%
 ##Crear loop para analizar todos los árboles
 topologies<-list.files(path=paste("prueba_COAD/data/ctpsingle/ctpsingle_files/",sample, sep=""),
                        pattern = "*num*")
-                       
+
 #Ejecutar loop solo para archivos con score = 0
 for (top in topologies) {
   
@@ -66,75 +66,59 @@ for (top in topologies) {
   } else {
     cat("Inferring sequences for topology",top,"\n")
     tree<-str_match(top,"tree_[0-99]")
-
-#Parental clone
+    
+    #Parental clone
     parental.clone.lab<-clone.tree[clone.tree$parent_node == 0, "child_node"]
     parental.clone.muts<-cluster.annots.list[[parental.clone.lab]]
-
+    
     assign(paste("clone",parental.clone.lab,"seq",sep=""),
-       inferseq(par.seq,clone.annotmuts.df))
-  
-#Derived clones
-##First order clones (Clones directly derived from parental)
-    first.order.clones<-clone.tree[clone.tree$parent_node == parental.clone.lab,"child_node"]
-
-    for (fo in first.order.clones) { 
-      clone.muts<-cluster.annots.list[[fo]]
-      inferseq(par.seq,clone.annotmuts.df)
-      assign(paste("clone",fo,"seq",sep=""),inferseq(par.seq,clone.annotmuts.df))
+           inferseq(par.seq,clone.annotmuts.df))
+    
+    parent.node=parental.clone.lab
+    child.nodes=clone.tree[clone.tree$parent_node == parent.node, "child_node"]
+    
+    while (length(child.nodes) > 0) {
+      
+      for (node in child.nodes) {
+        child.clone.muts<-cluster.annots.list[[node]]
+        assign(paste("clone",node,"seq",sep=""),
+               inferseq(get(paste("clone",parent.node,"seq",sep="")),
+                        child.clone.muts))
+      }
+      
+      parent.node=child.nodes
+      child.nodes=clone.tree[clone.tree$parent_node == parent.node, "child_node"]
+      
     }
-
-###Second order clones
-
-    if (clone.tree %>%  filter(parent_node == first.order.clones) %>% nrow() == 0) {
-      cat("There is no secondary subclones\n")
-    } else{
-  
-      cat("There is secondary subclones, inferrring sequences...\n")
-      second.order.clones<-clone.tree %>% filter(parent_node == first.order.clones)
-
-      for (s in 1:nrow(second.order.clones)) {
-  
-        so.parent.node<-second.order.clones[s,"parent_node"]
-        so.child.node<-second.order.clones[s,"child_node"]
-  
-        so.parent.seq<-get(paste("clone",so.parent.node,"seq",sep=""))
-        so.child.seq<-cluster.annots.list[[so.child.node]]
-  
-        assign(paste("clone",so.child.node,"seq",sep=""),inferseq(so.parent.seq, so.child.seq))
+    
+    #Bind the sequences
+    cat("Binding sequences...\n")
+    clone.seqs<-apropos("clone[1-99]seq")
+    all.seqs<-ref.seq %>% select(1:3) %>% rename(ref=codon)
+    
+    cl<-1
+    while (cl <= length(clone.seqs)) {
+      
+      cl.seq<-as.character(get(clone.seqs[cl])[,"codon"])
+      all.seqs<-cbind(all.seqs, cl.seq)
+      names(all.seqs)[ncol(all.seqs)]<-gsub("seq","",clone.seqs[cl])
+      cl=cl+1
+    }
+    
+    #Convert to fasta
+    cat("Saving sequences in FASTA format...\n")
+    
+    if (!file.exists(paste("prueba_COAD/data/ctpsingle/seqs/",sample,sep=""))) {
+      dir.create(paste("prueba_COAD/data/ctpsingle/seqs/",sample,sep=""))
+    }
+    
+    seq.file=paste("prueba_COAD/data/ctpsingle/seqs/",sample,"/",sample,"_",tree,"_clone_seqs.fas",sep="")
+    
+    all.seqs.cod<-all.seqs %>% arrange(chr,pos) %>% select(ref:ncol(all.seqs))
+    write.fasta(all.seqs.cod, 
+                names=names(all.seqs.cod),
+                file.out=seq.file,open="w")
+    
+    rm(list=clone.seqs)
   }
 }
-}
-
-#Bind the sequences
-cat("Binding sequences...\n")
-clone.seqs<-apropos("clone[1-99]seq")
-all.seqs<-ref.seq %>% select(1:3) %>% rename(ref=codon)
-
-cl<-1
-while (cl <= length(clone.seqs)) {
-  
-  cl.seq<-as.character(get(clone.seqs[cl])[,"codon"])
-  all.seqs<-cbind(all.seqs, cl.seq)
-  names(all.seqs)[ncol(all.seqs)]<-gsub("seq","",clone.seqs[cl])
-  cl=cl+1
-}
-
-#Convert to fasta
-cat("Saving sequences in FASTA format...\n")
-
-if (!file.exists(paste("prueba_COAD/data/ctpsingle/seqs/",sample,sep=""))) {
-  dir.create(paste("prueba_COAD/data/ctpsingle/seqs/",sample,sep=""))
-}
-
-seq.file=paste("prueba_COAD/data/ctpsingle/seqs/",sample,"/",sample,"_",tree,"_clone_seqs.fas",sep="")
-
-all.seqs.cod<-all.seqs %>% arrange(chr,pos) %>% select(ref:ncol(all.seqs))
-write.fasta(all.seqs.cod, 
-            names=names(all.seqs.cod),
-            file.out=seq.file,open="w")
-
-rm(list=clone.seqs)
-
-}
-
