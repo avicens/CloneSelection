@@ -73,8 +73,10 @@ topologies<-list.files(sample.dir, pattern = "*num*")
 #Ejecutar loop solo para archivos con score = 0
 for (top in topologies) {
   
-  clone.tree<-read.table(paste(sample.dir,top,sep="/"),header=F) %>% select(6:9)
+  clone.tree<-read.table(paste(sample.dir,top,sep="/"),header=F) 
+  clone.tree= clone.tree %>% select((ncol(clone.tree)-3):ncol(clone.tree))
   names(clone.tree)=c("parent_node","child_node","cell_fraction_child_node","score")
+  
   if ( clone.tree[1,"score"] > 0) {
     cat("Topology ", top, "discarded for having score > 0\n")
     next
@@ -101,8 +103,8 @@ for (top in topologies) {
                         child.clone.muts))
       }
       
-      parent.node=child.nodes
-      child.nodes=clone.tree[clone.tree$parent_node == parent.node, "child_node"]
+      parent.nodes=child.nodes
+      child.nodes=clone.tree[clone.tree$parent_nodes %in% parent.node, "child_node"]
       
     }
     
@@ -127,13 +129,15 @@ for (top in topologies) {
     #  dir.create(paste("prueba_COAD/data/ctpsingle/seqs/",sample,sep=""))
     #}
     
-    seq.file=paste(seq.dir,"/",sample,"_",tree,"_clone_seqs.fas",sep="")
+    seq.file=paste(seq.dir,sample,"_",tree,"_clone_seqs.fas",sep="")
     
     all.seqs.cod<-all.seqs %>% arrange(chr,pos) %>% select(ref:ncol(all.seqs))
-    write.fasta(all.seqs.cod, 
-                names=names(all.seqs.cod),
-                file.out=seq.file,open="w")
+    
+    write.fasta(all.seqs.cod, names=names(all.seqs.cod),
+                file.out=seq.file, open="w")
     
     rm(list=clone.seqs)
   }
 }
+
+cat("Work finished successfully!\n")
