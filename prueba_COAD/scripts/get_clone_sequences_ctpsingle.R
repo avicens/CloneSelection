@@ -123,9 +123,9 @@ for (top in topologies) {
     #Convert to fasta
     cat("Saving sequences in FASTA format...\n")
     
-    if (!file.exists(paste("prueba_COAD/data/ctpsingle/seqs/",sample,sep=""))) {
-      dir.create(paste("prueba_COAD/data/ctpsingle/seqs/",sample,sep=""))
-    }
+    #if (!file.exists(paste("prueba_COAD/data/ctpsingle/seqs/",sample,sep=""))) {
+    #  dir.create(paste("prueba_COAD/data/ctpsingle/seqs/",sample,sep=""))
+    #}
     
     seq.file=paste(seq.dir,"/",sample,"_",tree,"_clone_seqs.fas",sep="")
     
