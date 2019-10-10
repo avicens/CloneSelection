@@ -1,9 +1,25 @@
-library(dplyr)
-library(seqinr)
-#Load functions
-source(paste(script.path,"/annotate_mutations.R",sep=""))
+#Input arguments
+args<-commandArgs(TRUE)
 
-sample="TCGA-3L-AA1B"
+if (length(args) != 2) {
+  cat("Usage Rscript get_clone_sequences_ctpsingle.R <sample_ctpsingle_directory> <sequence_directory>\n")
+  cat("Exiting\n")
+  quit()
+}
+#Load libraries
+library(dplyr)
+library(tidyr)
+library(seqinr)
+library(stringr)
+
+#Assigning inputs to objects
+sample.dir=args[1]
+seq.dir=args[2]
+
+sample=str_match(sample.dir,"TCGA-[A-Z0-9]{2}-[A-Z0-9]{4}")
+
+#Load functions
+source(paste("scripts/annotate_mutations.R",sep=""))
 
 inferseq<-function(ref.pos, new.pos) {
   seqs<-new.pos %>% select(chr,pos,codon_alt) %>%
@@ -19,8 +35,8 @@ inferseq<-function(ref.pos, new.pos) {
   return(inf.seq)
 } 
 
-
-cluster.assign.file<-read.table("prueba_COAD/data/ctpsingle/ctpsingle_files/TCGA-3L-AA1B/TCGA-3L-AA1B_ctpsingle_cluster_assignments.txt",
+#Read cluster assignment file
+cluster.assign.file<-read.table(paste(sample.dir,"/",sample,"_ctpsingle_cluster_assignments.txt",sep=""),
                                 header=T)
 
 cluster.assign.file2<-cluster.assign.file %>% 
@@ -43,22 +59,21 @@ names(cluster.annots.list)<-names(cluster.assign.list)
 clusters.annotmuts.df<-bind_rows(cluster.annots.list, .id="column_label")
 
 #Reconstruct sequences
-#Reference sequence
+
+##Reference sequence
 ref.seq<-clusters.annotmuts.df %>% 
-  select(chr,pos,codon_ref) %>% 
-  mutate(chr=as.integer(chr), pos=as.integer(pos)) %>%
-  arrange(chr,pos) %>% 
-  mutate(coord=paste(chr,pos,sep=":")) %>%  
-  rename(codon = codon_ref)
+select(chr,pos,codon_ref) %>% 
+mutate(chr=as.integer(chr), pos=as.integer(pos)) %>%
+arrange(chr,pos) %>% 
+mutate(coord=paste(chr,pos,sep=":")) %>% rename(codon = codon_ref)
 
 ##Crear loop para analizar todos los árboles
-topologies<-list.files(path=paste("prueba_COAD/data/ctpsingle/ctpsingle_files/",sample, sep=""),
-                       pattern = "*num*")
+topologies<-list.files(sample.dir, pattern = "*num*")
 
 #Ejecutar loop solo para archivos con score = 0
 for (top in topologies) {
   
-  clone.tree<-read.table(paste("prueba_COAD/data/ctpsingle/ctpsingle_files",sample,top,sep="/"),header=F) %>% select(6:9)
+  clone.tree<-read.table(paste(sample.dir,top,sep="/"),header=F) %>% select(6:9)
   names(clone.tree)=c("parent_node","child_node","cell_fraction_child_node","score")
   if ( clone.tree[1,"score"] > 0) {
     cat("Topology ", top, "discarded for having score > 0\n")
@@ -72,7 +87,7 @@ for (top in topologies) {
     parental.clone.muts<-cluster.annots.list[[parental.clone.lab]]
     
     assign(paste("clone",parental.clone.lab,"seq",sep=""),
-           inferseq(par.seq,clone.annotmuts.df))
+           inferseq(ref.seq,parental.clone.muts))
     
     parent.node=parental.clone.lab
     child.nodes=clone.tree[clone.tree$parent_node == parent.node, "child_node"]
@@ -112,7 +127,7 @@ for (top in topologies) {
       dir.create(paste("prueba_COAD/data/ctpsingle/seqs/",sample,sep=""))
     }
     
-    seq.file=paste("prueba_COAD/data/ctpsingle/seqs/",sample,"/",sample,"_",tree,"_clone_seqs.fas",sep="")
+    seq.file=paste(seq.dir,"/",sample,"_",tree,"_clone_seqs.fas",sep="")
     
     all.seqs.cod<-all.seqs %>% arrange(chr,pos) %>% select(ref:ncol(all.seqs))
     write.fasta(all.seqs.cod, 
