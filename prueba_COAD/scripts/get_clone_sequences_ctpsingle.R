@@ -1,7 +1,7 @@
 #Input arguments
 args<-commandArgs(TRUE)
 
-if (length(args) != 2) {
+if (length(args) != 3) {
   cat("Usage Rscript get_clone_sequences_ctpsingle.R <sample_ctpsingle_directory> <sequence_directory>\n")
   cat("Exiting\n")
   quit()
@@ -129,7 +129,7 @@ for (top in topologies) {
     #  dir.create(paste("prueba_COAD/data/ctpsingle/seqs/",sample,sep=""))
     #}
     
-    seq.file=paste(seq.dir,sample,"_",tree,"_clone_seqs.fas",sep="")
+    seq.file=paste(seq.dir,"/",sample,"_",tree,"_clone_seqs.fas",sep="")
     
     all.seqs.cod<-all.seqs %>% arrange(chr,pos) %>% select(ref:ncol(all.seqs))
     
