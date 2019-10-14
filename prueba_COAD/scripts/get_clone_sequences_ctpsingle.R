@@ -1,7 +1,7 @@
 #Input arguments
 args<-commandArgs(TRUE)
 
-if (length(args) != 3) {
+if (length(args) != 2) {
   cat("Usage Rscript get_clone_sequences_ctpsingle.R <sample_ctpsingle_directory> <sequence_directory>\n")
   cat("Exiting\n")
   quit()
