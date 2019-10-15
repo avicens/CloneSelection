@@ -104,7 +104,7 @@ for (top in topologies) {
       }
       
       parent.nodes=child.nodes
-      child.nodes=clone.tree[clone.tree$parent_nodes %in% parent.node, "child_node"]
+      child.nodes=clone.tree[clone.tree$parent_node %in% parent.nodes, "child_node"]
       
     }
     
