@@ -28,7 +28,7 @@ inferseq<-function(ref.pos, new.pos) {
   
   gaps<-which(is.na(seqs$codon_alt))
   seqs$codon_alt[gaps]<-seqs$codon[gaps]
-  
+  seqs<-seqs[seqs$codon_alt !=".",]
   inf.seq<-seqs[,c("coord","codon_alt")]
   names(inf.seq)[2] <- "codon"
   
