@@ -111,13 +111,13 @@ for (top in topologies) {
     #Bind the sequences
     cat("Binding sequences...\n")
     clone.seqs<-apropos("clone[1-99]seq")
-    all.seqs<-ref.seq %>% select(1:3) %>% rename(ref=codon)
+    all.seqs<-ref.seq %>% select(1:4) %>% rename(ref=codon)
     
     cl<-1
     while (cl <= length(clone.seqs)) {
       
-      cl.seq<-as.character(get(clone.seqs[cl])[,"codon"])
-      all.seqs<-cbind(all.seqs, cl.seq)
+      cl.seq<-get(clone.seqs[cl])
+      all.seqs<-merge(all.seqs, cl.seq, by.x="coord", all.x=TRUE)
       names(all.seqs)[ncol(all.seqs)]<-gsub("seq","",clone.seqs[cl])
       cl=cl+1
     }
@@ -125,9 +125,6 @@ for (top in topologies) {
     #Convert to fasta
     cat("Saving sequences in FASTA format...\n")
     
-    #if (!file.exists(paste("prueba_COAD/data/ctpsingle/seqs/",sample,sep=""))) {
-    #  dir.create(paste("prueba_COAD/data/ctpsingle/seqs/",sample,sep=""))
-    #}
     
     seq.file=paste(seq.dir,"/",sample,"_",tree,"_clone_seqs.fas",sep="")
     
