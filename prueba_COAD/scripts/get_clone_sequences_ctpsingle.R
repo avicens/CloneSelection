@@ -49,6 +49,7 @@ cluster.assign.file2<-cluster.assign.file %>%
 cluster.assign.list<-split(cluster.assign.file2, cluster.assign.file2$mostLikely)
 
 cluster.annots.list<-list()
+
 for (i in 1:length(cluster.assign.list)) {
   cluster.annotmuts<-annotate.mutations(cluster.assign.list[[i]])
   cluster.annotmuts<-separate(cluster.annotmuts,"codonsub",into = c("codon_ref","codon_alt"),sep=">")
@@ -64,8 +65,10 @@ clusters.annotmuts.df<-bind_rows(cluster.annots.list, .id="column_label")
 ref.seq<-clusters.annotmuts.df %>% 
 select(chr,pos,codon_ref) %>% 
 mutate(chr=as.integer(chr), pos=as.integer(pos)) %>%
-arrange(chr,pos) %>% 
-mutate(coord=paste(chr,pos,sep=":")) %>% rename(codon = codon_ref)
+arrange(chr,pos) %>% mutate(coord=paste(chr,pos,sep=":")) %>% filter(codon_ref !=".")
+ref.seq<-ref.seq[!duplicated(ref.seq$coord),] 
+
+names(ref.seq)[3]<-"codon"
 
 ##Crear loop para analizar todos los árboles
 topologies<-list.files(sample.dir, pattern = "*num*")
@@ -87,6 +90,7 @@ for (top in topologies) {
     #Parental clone
     parental.clone.lab<-clone.tree[clone.tree$parent_node == 0, "child_node"]
     parental.clone.muts<-cluster.annots.list[[parental.clone.lab]]
+    parental.clone.muts<-parental.clone.muts[!duplicated(parental.clone.muts$pos) & !duplicated(parental.clone.muts$chr),]
     
     assign(paste("clone",parental.clone.lab,"seq",sep=""),
            inferseq(ref.seq,parental.clone.muts))
@@ -98,6 +102,7 @@ for (top in topologies) {
       
       for (node in child.nodes) {
         child.clone.muts<-cluster.annots.list[[node]]
+        child.clone.muts<-child.clone.muts[!duplicated(child.clone.muts$pos) & !duplicated(child.clone.muts$chr),]
         assign(paste("clone",node,"seq",sep=""),
                inferseq(get(paste("clone",parent.node,"seq",sep="")),
                         child.clone.muts))
@@ -111,20 +116,20 @@ for (top in topologies) {
     #Bind the sequences
     cat("Binding sequences...\n")
     clone.seqs<-apropos("clone[1-99]seq")
-    all.seqs<-ref.seq %>% select(1:4) %>% rename(ref=codon)
+    all.seqs<-ref.seq %>% select(1:4)
+    names(all.seqs)[3]<-"ref"
     
     cl<-1
     while (cl <= length(clone.seqs)) {
       
       cl.seq<-get(clone.seqs[cl])
-      all.seqs<-merge(all.seqs, cl.seq, by.x="coord", all.x=TRUE)
+      all.seqs<-merge(all.seqs, cl.seq, by="coord", all.x=TRUE)
       names(all.seqs)[ncol(all.seqs)]<-gsub("seq","",clone.seqs[cl])
       cl=cl+1
     }
     
     #Convert to fasta
     cat("Saving sequences in FASTA format...\n")
-    
     
     seq.file=paste(seq.dir,"/",sample,"_",tree,"_clone_seqs.fas",sep="")
     
