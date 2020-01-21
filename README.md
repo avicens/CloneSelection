@@ -13,5 +13,27 @@ Somatic mutations for each tumor sample were obtained from the metafile **mc3.v0
 
 I obtained copy number state, ploidy and purity information for 9786 tumor samples from a metafile (**TCGA_mastercalls.abs_segtabs.fixed.txt**) computed by [ABSOLUTE](https://software.broadinstitute.org/cancer/cga/absolute) tool. For extracting copy number state per tumor sample, I used the script **Wrapper_CNV_TCGA.py**, which calls the script **Obtain_CNV_TCGA.py**.
 
-To get the overlaps between muation and copy number features for each sample, I executed the script **intersect_SNV_CNV**, which call the **bedtools intersect** function.
+##Clonal deconvolution selection
+
+I used two softwares to infer clones based on allele frequency, copy number state and ploidy. *PyClone* and *CTPsingle*.
+
+To ensure we use high-quality variant data for clone inference, I retained the variants with variant frequency > 0.1, normalized depth > 20 and Copy Number = 2 (i.e. minor CN = 1 and, major CN =1) (this is because PyClone is not able to incorporate subclonal SNVs).
+
+#Get clonal sequences
+I retrieved sequences containing the mutated codons for each clone using the script **get_clone_sequences.R**. This script load a function based on the [dNdScv](https://github.com/im3sanger/dndscv/tree/master/R) library to extract the codons containing each mutation, taking the human genome hg19 as reference.
+In CESGA, the script was executed for every samples in an array job (**get_clone_seqs_array.sh**)
+
+#Reconstruct phylogenetic trees of clones
+I reconstruct phylogentic trees using the clonal sequences (plus reference) with [RAxML-ng](https://github.com/amkozlov/raxml-ng). Both rooted as unrooted trees were buil. Rooted trees were used for the global/ (strict) molecular clock model, and unrooted for the relaxed clock model and dN/dS estimation.
+
+In CESGA, the script was executed for every samples in an array job (**raxml_array.sh**).
+
+#Estimation of selective pressures (dN/dS)
+I estimated dN/dS in tumor samples using **codeml**. I estimated global dN/dS for tumor sample with the M0 model, and I estimated a dN/dS per branch using the *fb* model. PAML analysis were run with the [ETE toolkit](http://etetoolkit.org/). 
+
+To assess the hypothesis of dN/dS being constant or variable across branches, I applied a Likelihood Ratio TEST (LRT) comparing the
+In CESGA, the script was executed for every samples in an array job (**ete_codmel_array.sh**).
+
+
+
 
