@@ -1,6 +1,6 @@
 import pandas as pd
 
-samples = pd.read_csv("samples/samples_info_curated.txt",sep="\t").set_index("sample", drop=False)
+samples = pd.read_csv("samples/samples_prueba_info.txt",sep="\t").set_index("sample", drop=False)
 
 rule all:
     input:
@@ -29,8 +29,8 @@ rule run_pyclone:
     input:
        "data/pyclone_input/{sample}_pyclone.txt"
     output:
-       "data/pyclone_output/{sample}"
+       directory("data/pyclone_output/{sample}")
     run:
         os.mkdir(output[0])
 	pur = samples.loc[wildcards.sample,'purity']
-	shell("source activate pyclone;	PyClone run_analysis_pipeline --in_files {input} --working_dir {output} --tumour_contents {pur}  --density pyclone_binomial --min_cluster_size 2")
+	shell("PyClone run_analysis_pipeline --in_files {input} --working_dir {output} --tumour_contents {pur}  --density pyclone_binomial --min_cluster_size 2")
