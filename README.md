@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 Clonal selection
 =======
 # Pan-cancer analysis of selection
