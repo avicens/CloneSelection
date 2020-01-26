@@ -1,10 +1,18 @@
-library(stringr)
-library(dplyr)
+suppressMessages(library(stringr, quietly=TRUE))
+suppressMessages(library(dplyr, quietly = TRUE))
 
 args<-commandArgs(TRUE)
 
+if (length(args) != 2) {
+    cat("Input arguments must be inserted
+    Usage: get_ctpsingle_input.R <intersect file> <output file name>\n")
+    quit()
+}
 intersFile<-args[1]
 outFile<-args[2]
+
+
+
 
 sample<-str_extract(intersFile,"TCGA-[0-9A-Z]{2}-[A-Z0-9]{4}")
 
