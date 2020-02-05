@@ -37,8 +37,3 @@ I estimated dN/dS in tumor samples using **codeml**. I estimated global dN/dS fo
 
 To assess the hypothesis of dN/dS being constant or variable across branches, I applied a Likelihood Ratio TEST (LRT) comparing the
 In CESGA, the script was executed for every samples in an array job (**ete_codmel_array.sh**).
-
-
-
-
->>>>>>> 342596516e4213931c7a790152b8c37e09008ed1
