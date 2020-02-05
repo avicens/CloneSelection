@@ -3,24 +3,20 @@ library(clonevol)
 library(dplyr)
 
 #Input arguments
-if (length(args) != 3) {
-  cat("Usage: Rscript clone_tree_inference_clonevol.R  <pyclone.loci.table> <outLoci> <outTree>\n")
+if (length(args) != 1) {
+  cat("Usage: Rscript clone_tree_inference_clonevol.R  <sample name (e.g: TCGA-2F-A9KT)>\n")
 }
 
 args<-commandArgs(TRUE)
-pyclone.table.loci<-args[1]
-loci.output<-args[2]
-tree.output<-args[3]
+sample<-args[1]
+loci.output<-paste("data/pyclone/pyclone_output/",sample,"/",sample,"_loci.tsv",sep="")
+tree.output<-paste("data/pyclone/clonevol/",sample,"_clone_tree.txt",sep="")
 
 #Laod function for converting clone trees to branch
 source("scripts/convert.clone.to.branch.R")
 
 #Infer clone evolution from the loci table
-
-  sample<-sapply(strsplit(pyclone.table.loci,"/"),"[",3)
-  #pyclone.output.dir<-pyclone.output.dirs[i]
-  pyclone.loci<-read.table(pyclone.table.loci,
-                         sep="\t", header=T, stringsAsFactors = F)
+pyclone.loci<-read.table(paste("data/pyclone/pyclone_output/",sample,"/tables/loci.tsv",sep=""), sep="\t", header=T, stringsAsFactors = F)                         
 
 ##Only for multiple samples
 #Replicate variant frequency column with sample name
@@ -36,14 +32,14 @@ source("scripts/convert.clone.to.branch.R")
 #names(sample.groups)<-vaf.col.names
 
 #Convert variant/cellular frequency to proportions
-  pyclone.loci$variant_allele_frequency <- pyclone.loci$variant_allele_frequency*100
-  pyclone.loci$cellular_prevalence <- pyclone.loci$cellular_prevalence*100
+pyclone.loci$variant_allele_frequency <- pyclone.loci$variant_allele_frequency*100
+pyclone.loci$cellular_prevalence <- pyclone.loci$cellular_prevalence*100
 
-  #Order data frame by cluster numbering
-  pyclone.loci<-pyclone.loci[order(pyclone.loci$cluster_id,decreasing = F),]
+#Order data frame by cluster numbering
+pyclone.loci<-pyclone.loci[order(pyclone.loci$cluster_id,decreasing = F),]
 
 #Discard clusters with < 3 mutations
-  cluster.freq<-table(pyclone.loci$cluster_id)
+cluster.freq<-table(pyclone.loci$cluster_id)
 
   for (i in 1:length(cluster.freq)) {
     if (cluster.freq[i] < 3) {
@@ -78,23 +74,12 @@ source("scripts/convert.clone.to.branch.R")
                         alpha = 0.05)
   
 
-  clone.tree.branched<-convert.clone.to.branch(clone.tree$matched$merged.trees[[1]], 
+clone.tree.branched<-convert.clone.to.branch(clone.tree$matched$merged.trees[[1]], 
                                                branch.lens=NULL, merged.tree.node.annotation = "")
   
-  clone.tree.top<- clone.tree.branched %>% mutate_all(funs(gsub("#","",.))) %>% select(lab,vaf,parent,ancestors)
+clone.tree.top<- clone.tree.branched %>% mutate_all(funs(gsub("#","",.))) %>% select(lab,vaf,parent,ancestors)
 
-#  clone.tree.branch <- convert.consensus.tree.clone.to.branch(clone.tree, 
- #                                                             cluster.col = "cluster", branch.scale = "sqrt")
-
+#Export loci and  tree files
+write.table(pyclone.loci,loci.output, sep="\t",row.names = F, col.names = T, quote = F) 
+write.table(clone.tree.top,tree.output, sep="\t",row.names = F, col.names = T, quote = F)
   
-  #if (!file.exists(paste("data/pyclone_output/",sample,"tree",sep="/"))) {
-  #  dir.create(paste("data/pyclone_output/",sample,"tree",sep="/"))
-  #}
-
-  write.table(pyclone.loci,loci.output, sep="\t",row.names = F, col.names = T, quote = F) 
-  #write.table(pyclone.loci,paste("data/pyclone_output/",sample,"/tables/loci_processed.tsv",sep=""), sep="\t",row.names = F, col.names = T, quote = F) 
-  
-  #write.table(clone.tree.branched,paste("data/pyclone_output/",sample,"/tree.tsv",sep=""), sep="\t",row.names = F, col.names = T, quote = F)
-  write.table(clone.tree.top,tree.output, sep="\t",row.names = F, col.names = T, quote = F)
-  #write.table(clone.tree.top,paste(pyclone.output.dir,"/tree/",sample,"_pyclone_tree_topology.tsv",sep=""),
-  #            sep="\t",row.names = F, col.names = T, quote = F)

@@ -4,6 +4,11 @@ import os
 import sys
 import pandas as pd
 
+if len(sys.argv) != 3:
+    print("Usage get_clusters_ctpsingle.py  <ctpsingle_output_dir> <num_clusters_file> <cluster_size_file>\n")
+    sys.exit(1)
+    
+
 ctpdir = sys.argv[1]
 num_clusters_file=sys.argv[2]
 cluster_size_file=sys.argv[3]
@@ -25,9 +30,11 @@ for sample in samples:
     input_path=os.path.join(ctpdir,sample,(sample + "_ctpsingle_cluster_assignments.txt"))
     if os.path.exists(input_path):
         clusters_file=pd.read_csv(input_path, sep='\t')
+        
         #Add lines with number of clusters per sample
         num_clusters=clusters_file['mostLikely'].nunique()
         print(sample+"\t"+str(num_clusters), file=fh)
+        
         #Add lines with sizes of clusters from each sample
         cluster_size=clusters_file['mostLikely'].value_counts()
         cluster_size_df=cluster_size.to_frame()

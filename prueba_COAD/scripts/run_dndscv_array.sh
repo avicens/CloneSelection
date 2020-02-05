@@ -15,21 +15,20 @@ WORKDIR="/home/uvi/be/avs/store/dNdS_clones/prueba_COAD"
 DATADIR="$WORKDIR/data"
 SCRIPTDIR="$WORKDIR/scripts"
 SAMPLEDIR="$WORKDIR/samples"
+DNDSCVDIR="$DATADIR/dndscv"
 
 SAMPLES="$SAMPLEDIR/COAD_samples.txt"
 
 module load gcc/6.4.0 R/3.5.3
 
-mkdir -p $DATADIR/dndscv
-
 SAMPLE=`sed "${SLURM_ARRAY_TASK_ID}q;d" ${SAMPLES}`
 
-mkdir -p $DATADIR/dndscv/${SAMPLE}
+mkdir -p $DNDSCVDIR/${SAMPLE}
 echo "Running dNdScv script for  ${SAMPLE}"
 SNV="$DATADIR/snv/${SAMPLE}_SNV.tsv.gz"
 LOCI="$DATADIR/pyclone/loci/${SAMPLE}_loci.txt"
-INFILE="$DATADIR/dndscv/${SAMPLE}/${SAMPLE}_dndscv_input.txt"
-OUTFILE="$DATADIR/dndscv/${SAMPLE}/${SAMPLE}_bulk_dnds.txt"
+INFILE="$DNDSCVDIR/${SAMPLE}/${SAMPLE}_dndscv_input.txt"
+OUTFILE="$DNDSCVDIR/${SAMPLE}/${SAMPLE}_bulk_dnds.txt"
 
 Rscript $SCRIPTDIR/dndscv_samples.R $SNV $SAMPLE $INFILE $OUTFILE
 

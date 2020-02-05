@@ -26,7 +26,7 @@ snv<-read.table(gzfile(snv.file),header=T)
 
 #Estimate global dN/dS for the bulk
 dndscv.input <- snv %>% select("Chr","Start_Position","Reference","Alternate") %>% mutate(Sample=sample) %>% select(Sample, everything()) 
-dndscv.output<-dndscv(dndscv.input, outp = 1)
+dndscv.output<-dndscv(dndscv.input, outp = 1, max_coding_muts_per_sample= 12000)
 global.dnds<-dndscv.output$globaldnds[c(1,5),]
 #bulk.dnds$sample<-rep("Bulk",nrow(bulk.dnds))
 

@@ -2,7 +2,7 @@
 #SBATCH --mail-type=BEGIN,FAIL,END
 #SBATCH --mail-user=avicens@uvigo.es
 #SBATCH -J intersect_snv_cnv -o %x-%J.out
-#SBATCH --time=02:00:00
+#SBATCH --time=01:30:00
 #SBATCH -n 1
 #SBATCH -p shared --qos=shared
 #SBATCH -c 2

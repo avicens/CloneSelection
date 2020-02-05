@@ -16,7 +16,7 @@ module load gcccore/6.4.0 paml/4.9i
 
 #Set directories
 WORKDIR="/home/uvi/be/avs/store/dNdS_clones/prueba_COAD"
-TRACEDIR="$WORKDIR/trace"
+DATADIR="$WORKDIR/data"
 SEQSDIR="${TRACEDIR}/seqs"
 RAXMLDIR="${TRACEDIR}/raxml_trees"
 CLOCKDIR="${TRACEDIR}/molecular_clock"

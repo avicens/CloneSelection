@@ -36,8 +36,7 @@ inferseq<-function(ref.pos, new.pos) {
 } 
 
 #Read cluster assignment file
-cluster.assign.file<-read.table(paste(sample.dir,"/",sample,"_ctpsingle_cluster_assignments.txt",sep=""),
-                                header=T)
+cluster.assign.file<-read.table(paste(sample.dir,"/",sample,"_ctpsingle_cluster_assignments.txt",sep=""),header=T)
 
 cluster.assign.file2<-cluster.assign.file %>% 
   select(c("Chromosome","Position","Mutant","Reference","mostLikely")) %>% 
@@ -79,6 +78,8 @@ for (top in topologies) {
   clone.tree<-read.table(paste(sample.dir,top,sep="/"),header=F) 
   clone.tree= clone.tree %>% select((ncol(clone.tree)-3):ncol(clone.tree))
   names(clone.tree)=c("parent_node","child_node","cell_fraction_child_node","score")
+
+  tip.nodes<-clone.tree %>% filter(!(child_node %in% parent_node)) %>% select(child_node)
   
   if ( clone.tree[1,"score"] > 0) {
     cat("Topology ", top, "discarded for having score > 0\n")
@@ -129,14 +130,24 @@ for (top in topologies) {
     }
     
     #Convert to fasta
-    cat("Saving sequences in FASTA format...\n")
+    cat("Saving all sequences in FASTA format...\n")
     
-    seq.file=paste(seq.dir,"/",sample,"_",tree,"_clone_seqs.fas",sep="")
+    all.seq.file=paste(seq.dir,"/",sample,"_",tree,"_clone_seqs.fas",sep="")
     
     all.seqs.cod<-all.seqs %>% arrange(chr,pos) %>% select(ref:ncol(all.seqs))
     
     write.fasta(all.seqs.cod, names=names(all.seqs.cod),
-                file.out=seq.file, open="w")
+                file.out=all.seq.file, open="w")
+    
+    #Sequences for tip clones
+    cat("Saving tip sequences in FASTA format...\n")
+    tip.nodes.labels<-sapply(tip.nodes$child_node, function(x) paste("clone",x,sep=""))
+    tip.seqs.cod<- all.seqs.cod[,c("ref",tip.nodes.labels)]
+    
+    tip.seq.file=paste(seq.dir,"/",sample,"_",tree,"_clone_tip_seqs.fas",sep="")
+    
+    write.fasta(tip.seqs.cod, names=names(tip.seqs.cod),
+                file.out=tip.seq.file, open="w")
     
     rm(list=clone.seqs)
   }

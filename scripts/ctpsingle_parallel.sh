@@ -38,5 +38,5 @@ SRUN="srun -o $LOGDIR/%x-%J-%t.out -N1 -n1 --mem=$(( $MEMPERCORE*$OMP_NUM_THREAD
 
 parallel="parallel --delay .2 -j $SLURM_NTASKS --joblog $LOGDIR/runtask.log --resume-failed"
 
-$parallel --colsep '\t' "$SRUN bash ${SCRIPTDIR}/run_ctpsingle.sh {1} {#}" :::: ${SAMPLESFILE}
+$parallel --colsep '\t' "$SRUN bash ${SCRIPTDIR}/ctpsingle.sh {1} {#}" :::: ${SAMPLESFILE}
 

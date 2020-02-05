@@ -29,7 +29,8 @@ def ObtainSNV(SNV_TCGA_NoF,outpath_snv1,outpath_snv2):
 
     MutationTableSNV = MutationTableSNV[(MutationTableSNV['lenREF'] == 1)&(MutationTableSNV['lenALT'] == 1)]
     MutationTableSNV = MutationTableSNV[(MutationTableSNV['Alternate'] != '-')&(MutationTableSNV['Reference'] != '-')]
-    MutationTableSNV = MutationTableSNV[(MutationTableSNV['Chr'] != 'X')&(MutationTableSNV['Chr'] != 'Y')] #No sexual chromosomes
+    #Filter out variants in sexual chromosomes
+    MutationTableSNV = MutationTableSNV[(MutationTableSNV['Chr'] != 'X')&(MutationTableSNV['Chr'] != 'Y')] 
     MutationTableSNV = MutationTableSNV.drop(['lenREF','lenALT'],axis=1)
 
     for my_index, my_df in MutationTableSNV.groupby('Sample'):

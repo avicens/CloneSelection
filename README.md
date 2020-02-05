@@ -21,7 +21,11 @@ I used two softwares to infer clones based on allele frequency, copy number stat
 
 To ensure we use high-quality variant data for clone inference, I retained the variants with variant frequency > 0.1, normalized depth > 20 and Copy Number = 2 (i.e. minor CN = 1 and, major CN =1) (this is because PyClone is not able to incorporate subclonal SNVs).
 
+<<<<<<< HEAD
 The input for running these two programs was obtained with the R scripts **get_pyclone_input.R** and **get_ctpsingle_input.R**, and were called in loop with **get_pyclone_input_array.R** and **get_ctpsingle_input_array.R**
+=======
+The input for this programs was built  with the R scripts **get_pyclone_input_script.R** and **get_ctpsingle_input_script.R**.
+>>>>>>> d7f5c29f7dde7a8bcb5f8809f6d2a5514cc77e30
 
 ## Get clonal sequences
 I retrieved sequences containing the mutated codons for each clone using the script **get_clone_sequences.R**. This script load a function based on the [dNdScv](https://github.com/im3sanger/dndscv/tree/master/R) library to extract the codons containing each mutation, taking the human genome hg19 as reference.
